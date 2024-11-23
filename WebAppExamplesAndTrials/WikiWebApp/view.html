@@ -1,0 +1,4 @@
+<h1>{{.Title}}</h1>
+<p>[<a href="/edit/{{.Title}}">edit</a>]</p>
+<div>{{printf "%s" .Body}}</div>
+<!-- here, the .Title and the .Body referso to the p.Title and p.Body, where p is in the viewHandelr method-->

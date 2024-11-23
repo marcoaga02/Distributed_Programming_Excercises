@@ -1,0 +1,9 @@
+<h1>Editing {{.Title}}</h1>
+<!--in this template the palceholders .Title and .Body are used to substitute them dinamically into the page-->
+<form action="/save/{{.Title}}" method="POST"> <!--when the submit button is pushed, a POST request will be sent to /save/{{.Title}}-->
+    <div><textarea name="body" rows="20" cols="80">{{printf "%s" .Body}}</textarea></div> <!-- the name is important, since it will be 
+        the name of the textarea in the request. In go we extract all fields into the form using r.FormValue(nameOfTheField)-->
+    <div><input type="submit" value="Save"></div> <!--this is button Save and when it is pushed, an HTTP request is sent to /save/{{.Title}} and the textarea
+        is sent , since there is the .Body placeholder-->
+</form>
+<!--{{printf "%s" .Body}}: Will be substituted with the body of the page,converted in a string-->
