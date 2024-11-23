@@ -10,7 +10,6 @@ import (
 
 type client struct {
 	conn   net.Conn
-	name   string
 	writer *protocol.MessageWriter
 }
 
@@ -70,26 +69,25 @@ func (s *TcpChatServer) serve(client *client) {
 	defer s.remove(client)
 
 	for {
-		msg, err := msgReader.Read()
+		command, err := msgReader.Read()
 
 		if err != nil && err != io.EOF {
 			log.Printf("Read error: %v\n", err)
+			client.writer.Write([]byte(err.Error()))
 		}
 
 		if err == io.EOF {
 			break
 		}
 
-		if msg != nil {
-			switch v := msg.(type) {
-			case protocol.SendMessage:
-				bmsg := protocol.NotifyMessage{
-					Author:  client.name,
-					Content: v.Content,
-				}
-				go s.Broadcast(bmsg)
-			case protocol.ChangeNameMessage:
-				client.name = v.NewName
+		if command != nil {
+			log.Println("Executing")
+			data, err := command.Handle()
+			if err != nil {
+				log.Printf("Error: %v\n", err)
+				client.writer.Write([]byte(err.Error()))
+			} else {
+				client.writer.Write(data)
 			}
 		}
 	}
@@ -100,13 +98,4 @@ func (s *TcpChatServer) remove(client *client) {
 	defer s.mutex.Unlock()
 	delete(s.clients, client.conn.RemoteAddr())
 	client.conn.Close()
-}
-
-func (s *TcpChatServer) Broadcast(msg any) {
-	for _, c := range s.clients {
-		_, err := c.writer.Write(msg)
-		if err != nil {
-			log.Printf("Error write: %v", err)
-		}
-	}
 }
